@@ -38,7 +38,7 @@ let buildRust(path) = {
 }
 
 let buildHaskell(path) = {
-    !ghc "-O2" "${path}/src-ghc/Main.hs" "-o" ".build/${!basename path}-ghc" "-v0"
+    !ghc "-O2" "${path}/src-ghc/Main.hs" "-o" ".build/${!basename path}-ghc" "-v0" "-Wno-everything"
     ()
 }
 
