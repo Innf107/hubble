@@ -1,0 +1,73 @@
+import std:Panic (panic)
+import std:String
+import std:Int
+import std:IO/Posix (print)
+
+data Tree =
+    | Empty
+    | Node(Tree, Tree)
+
+check : Tree -> Int
+check(tree) = match tree {
+    Empty -> 0
+    Node(left, right) -> check(left) + check(right) + 1
+}
+
+makePerfectTree : Int -> Tree
+makePerfectTree(depth) = match depth {
+    0 -> Node(Empty, Empty)
+    _ -> Node(makePerfectTree(depth - 1), makePerfectTree(depth - 1))
+}
+
+printOutput : (String, Int, Int) -> ()
+printOutput(treeKind, depth, count) = {
+    print(String.append(treeKind, String.append(" of depth ", String.append(Int.toString(depth), String.append("\t check: ", Int.toString(count))))))
+}
+
+-- TODO: This should just be a (^) operator that uses a bitshift for powers of 2.
+-- For now we can hope that LLVM will optimize this to a bitshift anyway
+powerOfTwo : Int -> Int
+powerOfTwo(n) = {
+    -- This isn't pretty but it's hopefully easy to optimize
+    let loop(i, acc) = {
+        if (i < n) then {
+            loop(i + 1, 2*acc)
+        } else {
+            acc
+        }
+    }
+    loop(0, 1)
+}
+
+sumTrees : (Int, Int, Int) -> Int
+sumTrees(depth, i, sum) = match i {
+    0 -> sum
+    _ -> sumTrees(depth, i - 1, sum + check (makePerfectTree(depth)))
+}
+
+main : () -> ()
+main() = {
+    let minDepth = 4
+    -- TODO: This should actually be 21 but everything over 18 currently OOMs for me without GC (oops)
+    let maxDepth = 17
+    let stretchedDepth = maxDepth + 1
+
+    let stretchedTree = makePerfectTree(stretchedDepth)
+
+    let stretchedCount = check(stretchedTree)
+    printOutput("stretch tree", stretchedDepth, stretchedCount)
+
+    let longLivedTree = makePerfectTree(maxDepth);
+
+    let printAtDepths(depth, max) = if depth <= max then {
+        let count = powerOfTwo(max - depth + 4)
+        let sum = sumTrees(depth, count, 0)
+        printOutput(String.append(Int.toString(count), ("\t trees")), depth, sum)
+
+        printAtDepths(depth + 2, max)
+    } else {}
+    printAtDepths(minDepth, maxDepth)
+
+    printOutput("long lived tree", maxDepth, check (longLivedTree))
+}
+

@@ -1,0 +1,6 @@
+name: binary-trees
+backend: release
+dependencies: [
+  # TODO(alice): i reaally need to do this properly
+  { type: local, src: "../../../vega-graph/std" }
+]
